@@ -7,6 +7,7 @@ function Game() {
 	this.backdrop = [];
 	
 	this.titan;
+	this.actors = [];
 	
 	this.keyboard = new Keyboard();
 	
@@ -24,6 +25,7 @@ Game.prototype.draw = function(ctx) {
 	
 }
 
-Game.prototype.act = function() {
-	this.titan.act();
+Game.prototype.act = function(timestamp) {
+	this.titan.act(timestamp);
+	this.actors.forEach(function(a){a.act(timestamp)});
 }

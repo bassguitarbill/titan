@@ -7,9 +7,11 @@ window.onload = function(){
 	
 	var canvas = document.querySelector('canvas');
 	var ctx = canvas.getContext('2d');
+	
+	backdrop();
 
 	var gameLoop = function(timestamp) {
-		game.act();
+		game.act(timestamp);
 		game.draw(ctx);
 		window.requestAnimationFrame(gameLoop);
 	}

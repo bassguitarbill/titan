@@ -21,7 +21,7 @@ window.onload = function(){
 
 function spawn100Men() {
 	for(var i=0; i<100; i++){
-		var m = new Man(game, Math.random()*600, Math.random()*800);
+		var m = new Man(game, Math.random()*800, Math.random()*600);
 		m.task = tasks.moverandom;
 	}
 }

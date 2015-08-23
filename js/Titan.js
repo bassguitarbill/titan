@@ -68,6 +68,8 @@ function Titan(game, xpos, ypos) {
 	this.leftLegImg = this.images.leg.out.down;
 	this.stepRight = false;
 	
+	this.eyeColor = 'rgb(0,0,0)';
+	
 }
 
 Titan.prototype.act = function(timestamp) {
@@ -118,7 +120,6 @@ Titan.prototype.move = function(timestamp) {
 	this.attackHitbox.y = this.y;
 	
 	if(isMoving){ // On this frame, holding a move button
-		console.log(timestamp - this.movingSince);
 		if(this.movingSince == 0){
 			this.movingSince = timestamp;
 		} else {
@@ -147,12 +148,14 @@ Titan.prototype.move = function(timestamp) {
 Titan.prototype.attack = function(timestamp) {
 	
 	if(this.kb.c()){
-		if(this.chargeTime == -1){return};
+		if(this.chargeTime == -1){this.eyeColor = "rgb(255,255,255)"; return};
 		if(!this.charging){
 			this.chargeTime = timestamp;
 			sound.charge.play();
 		}
 		this.charging = true;
+		var percentCharged = (timestamp - this.chargeTime) / this.TIME_TO_CHARGE;
+		this.eyeColor = "rgb(" + Math.floor(percentCharged * 255) + ",0," + Math.floor(percentCharged * 255) + ")";
 		if((timestamp - this.chargeTime) > this.TIME_TO_CHARGE){
 			sound.explod.play();
 			var hb = this.attackHitbox;
@@ -164,6 +167,7 @@ Titan.prototype.attack = function(timestamp) {
 		}
 		
 	} else {
+		this.eyeColor = "rgb(0,0,0)";
 		this.chargeTime = 0;
 		if(this.charging){
 			sound.charge.pause();
@@ -182,6 +186,10 @@ Titan.prototype.draw = function(ctx) {
 	ctx.drawImage(this.leftLegImg, this.x - 30, this.y - 25, this.leftLegImg.width * 2, this.leftLegImg.height * 2);
 	ctx.drawImage(this.rightLegImg, this.x + 5, this.y - 25, this.rightLegImg.width * 2, this.rightLegImg.height * 2);
 	ctx.drawImage(this.images.body.down, this.x - 50, this.y - 100, this.images.body.down.width * 2, this.images.body.down.height * 2);
+	ctx.beginPath();
+	ctx.fillStyle = this.eyeColor;
+	//ctx.arc(this.x, this.y - 100, 20, 0, 2 * Math.PI);
+	ctx.fillRect(this.x - 20, this.y - 105, 40, 10);
 	ctx.drawImage(this.images.head.down, this.x - 30, this.y - 130, this.images.head.down.width * 2, this.images.head.down.height * 2);
 
 }

@@ -24,6 +24,10 @@ function Man(game,x,y) {
 
 }
 
+Man.prototype.kill = function() {
+	this.dead = true;
+}
+
 Man.prototype.draw = function(ctx) {
 	ctx.drawImage(this.images[this.whichImage()], this.x, this.y);
 }

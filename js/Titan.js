@@ -64,17 +64,21 @@ function Titan(game, xpos, ypos) {
 	this.images.leg.out.down = new Image();
 	this.images.leg.out.down.src = 'img/titanlegoutd.png';
 	
+	this.rightLegImg = this.images.leg.out.down;
+	this.leftLegImg = this.images.leg.out.down;
+	this.stepRight = false;
+	
 }
 
 Titan.prototype.act = function(timestamp) {
 	
 	this.birthdate = this.birthdate || timestamp;
-	this.move();
+	this.move(timestamp);
 	this.attack(timestamp);
 	
 }
 
-Titan.prototype.move = function() {
+Titan.prototype.move = function(timestamp) {
 
 	if(this.ableToMove) {
 		var direction = {x:0, y:0};
@@ -105,13 +109,38 @@ Titan.prototype.move = function() {
 	if(isMoving)
 		this.direction = direction;
 	
-	if(this.direction.x && this.direction.y){
+	if(isMoving && this.direction.x && this.direction.y){
 		this.direction.x *= SQRT_OF_POINT_FIVE;
 		this.direction.y *= SQRT_OF_POINT_FIVE;
 	}	
 	this.attackHitbox.direction = this.direction;
 	this.attackHitbox.x = this.x;
 	this.attackHitbox.y = this.y;
+	
+	if(isMoving){ // On this frame, holding a move button
+		console.log(timestamp - this.movingSince);
+		if(this.movingSince == 0){
+			this.movingSince = timestamp;
+		} else {
+			if((timestamp - this.movingSince) > this.TIME_TO_STEP){
+				sound.step.play();
+				this.movingSince = 0;
+				this.stepRight = !this.stepRight;
+				this.rightLegImg = this.images.leg.out.down;
+				this.leftLegImg = this.images.leg.out.down;
+			} else if((timestamp - this.movingSince) > this.TIME_TO_STEP/2) {
+				if(this.stepRight){
+					this.rightLegImg = this.images.leg.in.down;
+				} else {
+					this.leftLegImg = this.images.leg.in.down;
+				}
+			}
+		}
+	} else {
+		this.movingSince = 0;
+		this.rightLegImg = this.images.leg.out.down;
+		this.leftLegImg = this.images.leg.out.down;
+	}
 	
 }
 
@@ -127,7 +156,10 @@ Titan.prototype.attack = function(timestamp) {
 		if((timestamp - this.chargeTime) > this.TIME_TO_CHARGE){
 			sound.explod.play();
 			var hb = this.attackHitbox;
-			this.game.actors.filter(function(actor){return actor instanceof Man}).filter(function(man){return hb.contains(man.x, man.y)}).forEach(function(man){man.dead = true});
+			this.game.actors
+				.filter(function(actor){return actor instanceof Man})
+				.filter(function(man){return hb.contains(man.x, man.y)})
+				.forEach(function(man){man.kill()});
 			this.chargeTime = -1;
 		}
 		
@@ -147,8 +179,8 @@ Titan.prototype.draw = function(ctx) {
 	this.attackHitbox.draw(ctx);
 	this.hitbox.draw(ctx);
 
-	ctx.drawImage(this.images.leg.out.down, this.x - 30, this.y - 25, this.images.leg.out.down.width * 2, this.images.leg.out.down.height * 2);
-	ctx.drawImage(this.images.leg.in.down, this.x + 5, this.y - 25, this.images.leg.in.down.width * 2, this.images.leg.in.down.height * 2);
+	ctx.drawImage(this.leftLegImg, this.x - 30, this.y - 25, this.leftLegImg.width * 2, this.leftLegImg.height * 2);
+	ctx.drawImage(this.rightLegImg, this.x + 5, this.y - 25, this.rightLegImg.width * 2, this.rightLegImg.height * 2);
 	ctx.drawImage(this.images.body.down, this.x - 50, this.y - 100, this.images.body.down.width * 2, this.images.body.down.height * 2);
 	ctx.drawImage(this.images.head.down, this.x - 30, this.y - 130, this.images.head.down.width * 2, this.images.head.down.height * 2);
 
@@ -159,3 +191,4 @@ Titan.prototype.SPEED = 0.4;
 Titan.prototype.ATTACK_RADIUS = 20;
 Titan.prototype.ATTACK_DISTANCE = 60;
 Titan.prototype.TIME_TO_CHARGE = 800;
+Titan.prototype.TIME_TO_STEP = 1000;

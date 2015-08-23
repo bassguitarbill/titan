@@ -18,3 +18,10 @@ window.onload = function(){
 	
 	window.requestAnimationFrame(gameLoop);
 }
+
+function spawn100Men() {
+	for(var i=0; i<100; i++){
+		var m = new Man(game, Math.random()*600, Math.random()*800);
+		m.task = tasks.moverandom;
+	}
+}

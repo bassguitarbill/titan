@@ -42,6 +42,9 @@ function Titan(game, xpos, ypos) {
 		ctx.arc(center.x, center.y, this.radius, 0, 2 * Math.PI);
 		ctx.fill();
 	}
+	
+	this.charging = false;
+	this.chargeTime = 0;
 
 	this.images = {};
 	this.images.head = {};
@@ -67,6 +70,7 @@ Titan.prototype.act = function(timestamp) {
 	
 	this.birthdate = this.birthdate || timestamp;
 	this.move();
+	this.attack(timestamp);
 	
 }
 
@@ -110,10 +114,36 @@ Titan.prototype.move = function() {
 	this.attackHitbox.y = this.y;
 	
 }
+
+Titan.prototype.attack = function(timestamp) {
+	
+	if(this.kb.c()){
+		if(this.chargeTime == -1){return};
+		if(!this.charging){
+			this.chargeTime = timestamp;
+			sound.charge.play();
+		}
+		this.charging = true;
+		if((timestamp - this.chargeTime) > this.TIME_TO_CHARGE){
+			sound.explod.play();
+			var hb = this.attackHitbox;
+			this.game.actors.filter(function(actor){return actor instanceof Man}).filter(function(man){return hb.contains(man.x, man.y)}).forEach(function(man){man.dead = true});
+			this.chargeTime = -1;
+		}
+		
+	} else {
+		this.chargeTime = 0;
+		if(this.charging){
+			sound.charge.pause();
+			sound.charge.currentTime = 0;
+		}
+		this.charging = false;
+	}
+	
+}
 	
 Titan.prototype.draw = function(ctx) {
 
-	console.log(this.direction);
 	this.attackHitbox.draw(ctx);
 	this.hitbox.draw(ctx);
 
@@ -128,3 +158,4 @@ Titan.prototype.RADIUS = 30;
 Titan.prototype.SPEED = 0.4;
 Titan.prototype.ATTACK_RADIUS = 20;
 Titan.prototype.ATTACK_DISTANCE = 60;
+Titan.prototype.TIME_TO_CHARGE = 800;
